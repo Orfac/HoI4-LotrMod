@@ -1,6 +1,6 @@
 ﻿name: CWTools CI
 
-on: [pull_request, push] # other events may work but are not supported
+on: [push, pull_request]
 
 permissions:
   contents: read
@@ -10,10 +10,23 @@ permissions:
 jobs:
   cwtools_job:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v1 # required
-    - uses: cwtools/cwtools-action@v1.1.0
-      with:
-        game: hoi4
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # required, secret is automatically set by github
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run CWTools
+        uses: cwtools/cwtools-action@v1.1.0
+        with:
+          game: hoi4
+          locLanguages: english
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload CWTools report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cwtools-report
+          path: ${{ github.workspace }}/output.json
+          if-no-files-found: error
